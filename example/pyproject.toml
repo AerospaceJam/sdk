@@ -1,0 +1,7 @@
+[project]
+name = "teamcode"
+version = "0.1.0"
+description = "Aerospace Jam example project"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []

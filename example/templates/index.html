@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- This sets your page title. You can change this to whatever you want! -->
+    <title>Aerospace Jam Example</title>
+    <!-- The below script tag is used to load socket.io from the server. -->
+    <script src="{{ url_for('static', filename='js/socket.io.js') }}"></script>
+</head>
+<body>
+    <h1>Aerospace Jam Example</h1>
+    <!-- Notice how the span that contains the placeholder value has an ID. We reference this ID later in the script, and it lets us pick this element in specific. -->
+    <p><b>Random number chosen by the Pi: </b> <span id="randomNumber">Loading...</span> hPa</p>
+    <script>
+        // This function wrapper (addEventListener) makes the inner contents run only when the DOM (Document Object Model) content is loaded.
+        // In simpler terms, this runs once the page has finished loading.
+        document.addEventListener('DOMContentLoaded', function() {
+            // Then, we connect to our webserver using two special variables - you don't need to worry about this either.
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+            // Now, we subscribe to the server's "update_data" events - this is sent every second by the background thread, but you can change both the events' names and the speed of these events being sent.
+            socket.on('update_data', function(msg) {
+                // Now, we get the span that we defined before by its ID...
+                var randomNumberSpan = document.getElementById('randomNumber');
+                // And we set its content to the random number we just got from the server.
+                randomNumberSpan.textContent = msg.randomNumber;
+                // For new sensors, we can really easily repeat this! For instance, if you added a piece to the data on the server side called "mySensor", as in the other example, you could do:
+                // var mySensorSpan = document.getElementById('mySensor');
+                // mySensorSpan.textContent = msg.mySensor;
+            });
+        });
+    </script>
+</body>
+</html>
