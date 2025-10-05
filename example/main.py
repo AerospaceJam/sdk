@@ -29,6 +29,7 @@ def background_thread():
                 # 'mySensor': mysensor.get_sensor_data(),
             }
         )
+        # To add a your first new sensor, try giving https://docs.aerospacejam.org/getting-started/first-sensor a read!
 
 # This function runs when someone connects to the server - and all we do is start the background thread to update the data.
 @socketio.on('connect')
