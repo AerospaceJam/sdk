@@ -109,6 +109,30 @@ sudo mount --bind /sys "${MOUNT_POINT}/sys"
 ENCRYPTED_PASSWORD=$(echo "${SDK_PASSWORD}" | openssl passwd -6 -stdin)
 # sudo bash -c "echo '${SDK_USERNAME}:${ENCRYPTED_PASSWORD}' > ${MOUNT_POINT}/boot/userconf.txt"
 
+echo "--- Enabling I2C ---"
+
+CONFIG_TXT="${MOUNT_POINT}/boot/config.txt"
+ETC_MODULES="${MOUNT_POINT}/etc/modules"
+
+if ! sudo grep -q "^dtparam=i2c_arm=on" "${CONFIG_TXT}"; then
+    echo "Adding 'dtparam=i2c_arm=on' to ${CONFIG_TXT}"
+    echo "" | sudo tee -a "${CONFIG_TXT}" > /dev/null
+    echo "# Enable I2C" | sudo tee -a "${CONFIG_TXT}" > /dev/null
+    echo "dtparam=i2c_arm=on" | sudo tee -a "${CONFIG_TXT}" > /dev/null
+else
+    echo "'dtparam=i2c_arm=on' already exists in ${CONFIG_TXT}"
+fi
+
+if ! sudo grep -q "^i2c-dev" "${ETC_MODULES}"; then
+    echo "Adding 'i2c-dev' to ${ETC_MODULES}"
+    echo "i2c-dev" | sudo tee -a "${ETC_MODULES}" > /dev/null
+else
+    echo "'i2c-dev' already exists in ${ETC_MODULES}"
+fi
+
+echo "--- Chrooting and running customization script ---"
+sudo cp "${STAGE1_SCRIPT}" "${MOUNT_POINT}/"
+
 echo "--- Chrooting and running customization script ---"
 sudo cp "${STAGE1_SCRIPT}" "${MOUNT_POINT}/"
 sudo chroot "${MOUNT_POINT}" /bin/bash "/${STAGE1_SCRIPT}" "${ENCRYPTED_PASSWORD}"
