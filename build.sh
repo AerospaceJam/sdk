@@ -51,7 +51,7 @@ sudo bash -c "${reg}" 2>/dev/null || true
 # Download and decompress the image if necessary
 if [ ! -f "${IMAGE_FILENAME}" ]; then
     echo "--- Downloading Raspberry Pi OS Image ---"
-    wget -O "${IMAGE_FILENAME}" "${IMAGE_URL}"
+    wget -q -O "${IMAGE_FILENAME}" "${IMAGE_URL}"
 else
     echo "--- Image already downloaded ---"
 fi
