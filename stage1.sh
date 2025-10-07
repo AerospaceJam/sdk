@@ -104,7 +104,7 @@ apt-get install -y gh dunst attr git build-essential firefox \
     python3-dev mypy python3-mypy python3-flask python3-flask-socketio \
     python3-picamera2 python3-smbus python3-rpi.gpio
  
-pip3 install mpu6050-raspberrypi git+https://github.com/AerospaceJam/bmp180.git --break-system-packages
+pip3 install mpu6050-raspberrypi git+https://github.com/AerospaceJam/bmp180.git tfluna-driver --break-system-packages
 
 echo "Installing uv for user ${SDK_USERNAME}..."
 su "${SDK_USERNAME}" -c "curl -LsSf https://astral.sh/uv/install.sh | sh"
