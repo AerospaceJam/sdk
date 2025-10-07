@@ -107,7 +107,7 @@ apt-get install -y gh dunst attr git build-essential firefox \
 pip3 install mpu6050-raspberrypi git+https://github.com/AerospaceJam/bmp180.git tfluna-driver --break-system-packages
 
 echo "Installing uv for user ${SDK_USERNAME}..."
-su "${SDK_USERNAME}" -c "curl -LsSf https://astral.sh/uv/install.sh | sh"
+sudo -H -u "${SDK_USERNAME}" bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'
 
 echo "--- Creating desktop icons and helper scripts ---"
 DESKTOP_DIR="/home/${SDK_USERNAME}/Desktop"
