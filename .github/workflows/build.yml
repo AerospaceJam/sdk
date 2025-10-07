@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            qemu-user-static \
+            kpartx \
+            parted \
+            e2fsprogs \
+            wget \
+            xz-utils \
+            openssl
+
+      - name: Build
+        run: chmod +x build.sh && sudo ./build.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aerospacejam-sdk-raspios-image
+          path: aerospacejam-sdk-*.img
+          if-no-files-found: error
