@@ -79,7 +79,7 @@ sleep 2
 ROOT_PARTITION="/dev/mapper/${LOOP_DEVICE}"
 
 echo "--- Checking and resizing root filesystem ---"
-sudo e2fsck -f "${ROOT_PARTITION}"
+sudo e2fsck -f -y "${ROOT_PARTITION}"
 sudo resize2fs "${ROOT_PARTITION}"
 
 echo "--- Mounting root partition ---"
