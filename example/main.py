@@ -40,7 +40,7 @@ def handle_connect():
 # This function is called
 def main():
     # These specific arguments are required to make sure the webserver is hosted in a consistent spot, so don't change them unless you know what you're doing.
-    socketio.run(app, host='0.0.0.0', port=80)
+    socketio.run(app, host='0.0.0.0', port=80, allow_unsafe_werkzeug=True)
 
 if __name__ == '__main__':
     main()
