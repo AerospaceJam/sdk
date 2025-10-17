@@ -102,7 +102,7 @@ sed -i 's/raspberrypi/aerospacejam/' /etc/hosts
 echo "Doing big package operations... This will take a bit."
 apt-get install -y gh dunst attr git build-essential firefox \
     python3-dev mypy python3-mypy python3-flask python3-flask-socketio \
-    python3-picamera2 python3-smbus python3-rpi.gpio
+    python3-picamera2 python3-smbus python3-rpi.gpio minicom
  
 pip3 install mpu6050-raspberrypi git+https://github.com/AerospaceJam/bmp180.git git+https://github.com/AerospaceJam/tfluna.git --break-system-packages
 
@@ -116,16 +116,23 @@ mkdir -p "${DESKTOP_DIR}"
 cat << 'EOF' > /usr/local/bin/dev-mode
 #!/bin/bash
 systemctl stop teamcode.service
+# Specifically disable autoconnect for the hotspot connection profile
+nmcli con modify "CompetitionHotspot" connection.autoconnect no
 nmcli con down "CompetitionHotspot"
+# Allow the wlan0 hardware to connect to any other known Wi-Fi network
 nmcli device set wlan0 autoconnect yes
-sleep 2
-notify-send "Development Mode" "Standard Wi-Fi is now enabled." -i network-wireless
+sleep 1
+notify-send "Development Mode" "Standard Wi-Fi enabled. Will now connect to known networks." -i network-wireless
 EOF
 
 cat << 'EOF' > /usr/local/bin/comp-mode
 #!/bin/bash
 SSID=$(nmcli -t -f 802-11-wireless.ssid con show CompetitionHotspot | sed 's/.*://')
+# Prevent the wlan0 hardware from connecting to anything on its own
 nmcli device set wlan0 autoconnect no
+# Specifically enable autoconnect for the hotspot, ensuring it starts on boot
+nmcli con modify "CompetitionHotspot" connection.autoconnect yes
+# Bring up the hotspot now
 nmcli con up "CompetitionHotspot"
 notify-send "Competition Mode" "Starting team code..." -i network-wireless-hotspot
 sleep 2
@@ -135,8 +142,11 @@ EOF
 
 cat << 'EOF' > /usr/local/bin/comp-mode-nonotify
 #!/bin/bash
-SSID=$(nmcli -t -f 802-11-wireless.ssid con show CompetitionHotspot | sed 's/.*://')
+# Prevent the wlan0 hardware from connecting to anything on its own
 nmcli device set wlan0 autoconnect no
+# Specifically enable autoconnect for the hotspot, ensuring it starts on boot
+nmcli con modify "CompetitionHotspot" connection.autoconnect yes
+# Bring up the hotspot now
 nmcli con up "CompetitionHotspot"
 systemctl start teamcode.service
 EOF
@@ -153,7 +163,7 @@ notify-send "Success!" "Hotspot name changed to '${NEW_SSID}'.\nRe-enabling comp
 nmcli con down "CompetitionHotspot"; sleep 1; nmcli con up "CompetitionHotspot"
 EOF
 
-chmod +x /usr/local/bin/dev-mode /usr/local/bin/comp-mode /usr/local/bin/change-hotspot-name
+chmod +x /usr/local/bin/dev-mode /usr/local/bin/comp-mode /usr/local/bin/comp-mode-nonotify /usr/local/bin/change-hotspot-name
 
 cat << EOF > "${DESKTOP_DIR}/Development Mode.desktop"
 [Desktop Entry]
@@ -230,7 +240,19 @@ ExecStart=/usr/local/bin/comp-mode-nonotify
 WantedBy=graphical.target
 EOF
 
-chmod 644 /etc/systemd/system/comp-mode.service
+cat << EOF > /etc/systemd/system/teamcode.service
+[Unit]
+Description=Aerospace Jam Team Code Service
+
+[Service]
+Type=simple
+User=${SDK_USERNAME}
+WorkingDirectory=/home/${SDK_USERNAME}/teamCode
+ExecStart=/usr/bin/python3 /home/${SDK_USERNAME}/teamCode/main.py
+Restart=on-failure
+EOF
+
+chmod 644 /etc/systemd/system/comp-mode.service /etc/systemd/system/teamcode.service
 systemctl enable comp-mode.service
 
 echo "--- Making desktop icons executable and trusted ---"
@@ -238,6 +260,11 @@ chmod +x "${DESKTOP_DIR}"/*.desktop
 for f in "${DESKTOP_DIR}"/*.desktop; do
     setfattr -n trusted.glib -v y "$f"
 done
+
+echo "Setting wallpaper..."
+CONFIG_FILE="/etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf"
+NEW_WALLPAPER="/usr/share/rpd-wallpaper/asj.jpeg"
+sed -i "s#^wallpaper=.*#wallpaper=${NEW_WALLPAPER}#" "${CONFIG_FILE}"
 
 echo "Setting final permissions and cleaning up..."
 chown -R "${SDK_USERNAME}:${SDK_USERNAME}" "/home/${SDK_USERNAME}"
