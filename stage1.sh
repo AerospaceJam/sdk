@@ -265,6 +265,8 @@ echo "Setting wallpaper..."
 CONFIG_FILE="/etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf"
 NEW_WALLPAPER="/usr/share/rpd-wallpaper/asj.jpeg"
 sed -i "s#^wallpaper=.*#wallpaper=${NEW_WALLPAPER}#" "${CONFIG_FILE}"
+sed -i 's/^desktop_fg=.*/desktop_fg=#000000/' "${CONFIG_FILE}"
+sed -i 's/^desktop_shadow=.*/desktop_shadow=#ffffff/' "${CONFIG_FILE}"
 
 echo "Setting final permissions and cleaning up..."
 chown -R "${SDK_USERNAME}:${SDK_USERNAME}" "/home/${SDK_USERNAME}"
